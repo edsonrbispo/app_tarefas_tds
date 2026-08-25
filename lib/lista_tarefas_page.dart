@@ -52,6 +52,11 @@ class ListaTarefasPage extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        //shape: CircleBorder(),
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
