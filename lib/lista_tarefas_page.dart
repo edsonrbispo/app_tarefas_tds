@@ -5,52 +5,50 @@ class ListaTarefasPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> tarefas = [
+      {'titulo': 'Configuração do Ambiente', 'situacao': true},
+      {'titulo': 'Fazer compras', 'situacao': false},
+      {'titulo': 'Estudar Inglês', 'situacao': false},
+      {'titulo': 'Fazer compras', 'situacao': true},
+      {'titulo': 'Pagar a fatura', 'situacao': true},
+      {'titulo': 'Sair as 22h10', 'situacao': false},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Minhas Tarefas"),
         centerTitle: true,
       ),
-      body: ListView(
+      body: ListView.builder(
         padding: EdgeInsets.all(12),
-        children: [
-          Card(
+        itemCount: tarefas.length,
+        itemBuilder: (context, index) {
+          final tarefa = tarefas[index];
+          final bool situacao = tarefa['situacao'];
+
+          return Card(
             margin: EdgeInsets.symmetric(vertical: 6),
             child: ListTile(
               leading: Icon(
-                Icons.check_circle,
-                color: Colors.green,
+                situacao ? Icons.check_circle : Icons.circle_outlined,
+                color: situacao ? Colors.green : Colors.grey,
               ),
               title: Text(
-                'Configurar o Ambiente de Desenvolvimento',
+                tarefa['titulo'],
                 style: TextStyle(
-                  decoration: TextDecoration.lineThrough,
+                  decoration: situacao
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
                 ),
               ),
-              subtitle: Text('Concluida'),
+              subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
               trailing: Icon(
                 Icons.delete_outline,
                 color: Colors.grey,
               ),
             ),
-          ),
-          Card(
-            margin: EdgeInsets.symmetric(vertical: 6),
-            child: ListTile(
-              leading: Icon(
-                Icons.circle_outlined,
-                color: Colors.grey,
-              ),
-              title: Text(
-                'Cria projeto em Flutter',
-              ),
-              subtitle: Text('Pendente'),
-              trailing: Icon(
-                Icons.delete_outline,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
