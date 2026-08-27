@@ -1,57 +1,120 @@
 import 'package:flutter/material.dart';
 
-class ListaTarefasPage extends StatelessWidget {
+class ListaTarefasPage extends StatefulWidget {
   const ListaTarefasPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> tarefas = [
-      {'titulo': 'Configuração do Ambiente', 'situacao': true},
-      {'titulo': 'Fazer compras', 'situacao': false},
-      {'titulo': 'Estudar Inglês', 'situacao': false},
-      {'titulo': 'Fazer compras', 'situacao': true},
-      {'titulo': 'Pagar a fatura', 'situacao': true},
-      {'titulo': 'Sair as 22h10', 'situacao': false},
-    ];
+  State<ListaTarefasPage> createState() => _ListaTarefasPageState();
+}
 
+class _ListaTarefasPageState extends State<ListaTarefasPage> {
+  final List<Map<String, dynamic>> tarefas = [];
+
+  //Marcar Tarefa como Concluida/Pendente
+  void marcarSituacao(int index) {
+    setState(() {
+      tarefas[index]['situacao'] = !tarefas[index]['situacao'];
+    });
+  }
+
+  //Remover Tarefa
+  void removerTarefa(int index) {
+    setState(() {
+      tarefas.removeAt(index);
+    });
+  }
+
+  //Adicionar Tarefa
+  void adicionarTarefa() {
+    final adicionarController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Nova Tarefa'),
+          content: TextField(
+            controller: adicionarController,
+            decoration: InputDecoration(hintText: "Digite sua tarefa..."),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (adicionarController.text.isNotEmpty) {
+                  setState(() {
+                    tarefas.add({
+                      'titulo': adicionarController.text,
+                      'situacao': false,
+                    });
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Adicionar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Minhas Tarefas"),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.all(12),
-        itemCount: tarefas.length,
-        itemBuilder: (context, index) {
-          final tarefa = tarefas[index];
-          final bool situacao = tarefa['situacao'];
+      body: tarefas.isEmpty
+          ? Center(
+              child: Text(
+                'Nenhuma Tarefa Encontrada',
+                style: TextStyle(fontSize: 20, color: Colors.grey),
+              ),
+            )
+          : ListView.builder(
+              padding: EdgeInsets.all(12),
+              itemCount: tarefas.length,
+              itemBuilder: (context, index) {
+                final tarefa = tarefas[index];
+                final bool situacao = tarefa['situacao'];
 
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 6),
-            child: ListTile(
-              leading: Icon(
-                situacao ? Icons.check_circle : Icons.circle_outlined,
-                color: situacao ? Colors.green : Colors.grey,
-              ),
-              title: Text(
-                tarefa['titulo'],
-                style: TextStyle(
-                  decoration: situacao
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                ),
-              ),
-              subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
-              trailing: Icon(
-                Icons.delete_outline,
-                color: Colors.grey,
-              ),
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    leading: GestureDetector(
+                      onTap: () => marcarSituacao(index),
+                      child: Icon(
+                        situacao ? Icons.check_circle : Icons.circle_outlined,
+                        color: situacao ? Colors.green : Colors.grey,
+                      ),
+                    ),
+                    title: Text(
+                      tarefa['titulo'],
+                      style: TextStyle(
+                        decoration: situacao
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
+                    ),
+                    subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
+                    trailing: GestureDetector(
+                      onTap: () => removerTarefa(index),
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => adicionarTarefa(),
         //shape: CircleBorder(),
         child: Icon(Icons.add),
       ),
