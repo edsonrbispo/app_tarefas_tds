@@ -1,3 +1,4 @@
+import 'package:app_tarefas/database_helper.dart';
 import 'package:flutter/material.dart';
 
 class ListaTarefasPage extends StatefulWidget {
@@ -8,7 +9,20 @@ class ListaTarefasPage extends StatefulWidget {
 }
 
 class _ListaTarefasPageState extends State<ListaTarefasPage> {
-  final List<Map<String, dynamic>> tarefas = [];
+  List<Map<String, dynamic>> tarefas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregarTarefas();
+  }
+
+  void carregarTarefas() async {
+    final dados = await DatabaseHelper.buscarTarefas();
+    setState(() {
+      tarefas = dados;
+    });
+  }
 
   //Marcar Tarefa como Concluida/Pendente
   void marcarSituacao(int index) {
@@ -43,14 +57,14 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
               child: Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (adicionarController.text.isNotEmpty) {
-                  setState(() {
-                    tarefas.add({
-                      'titulo': adicionarController.text,
-                      'situacao': false,
-                    });
-                  });
+                  await DatabaseHelper.inserirTarefa(adicionarController.text);
+
+                  carregarTarefas();
+
+                  if (!context.mounted) return;
+
                   Navigator.pop(context);
                 }
               },
@@ -81,7 +95,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
               itemCount: tarefas.length,
               itemBuilder: (context, index) {
                 final tarefa = tarefas[index];
-                final bool situacao = tarefa['situacao'];
+                final bool situacao = tarefa['situacao'] == 1;
 
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 6),
