@@ -25,17 +25,24 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
   }
 
   //Marcar Tarefa como Concluida/Pendente
-  void marcarSituacao(int index) {
-    setState(() {
-      tarefas[index]['situacao'] = !tarefas[index]['situacao'];
-    });
+  Future<void> marcarSituacao(int index) async {
+    final tarefa = tarefas[index];
+
+    await DatabaseHelper.atualizarSituacao(
+      tarefa['id'],
+      tarefa['situacao'],
+    );
+
+    carregarTarefas();
   }
 
   //Remover Tarefa
-  void removerTarefa(int index) {
-    setState(() {
-      tarefas.removeAt(index);
-    });
+  Future<void> removerTarefa(int index) async {
+    final tarefa = tarefas[index];
+
+    await DatabaseHelper.removerTarefa(tarefa['id']);
+
+    carregarTarefas();
   }
 
   //Adicionar Tarefa
@@ -86,8 +93,8 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
       body: tarefas.isEmpty
           ? Center(
               child: Text(
-                'Nenhuma Tarefa Encontrada',
-                style: TextStyle(fontSize: 20, color: Colors.grey),
+                'Nenhuma tarefa ainda. Toque em + para adicionar',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
           : ListView.builder(

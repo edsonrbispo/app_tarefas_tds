@@ -42,4 +42,25 @@ class DatabaseHelper {
       'situacao': 0, //0 = False, 1 = Verdadeiro (SQLite não tem Boolean)
     });
   }
+
+  //UPDATE: Alterar o campo marcado da tarefa
+  static Future<void> atualizarSituacao(int id, int situacao) async {
+    final db = await DatabaseHelper.database;
+    await db.update(
+      'tarefas',
+      {'situacao': situacao == 1 ? 0 : 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  //DELETE: Remover uma tarefa
+  static Future<void> removerTarefa(int id) async {
+    final db = await DatabaseHelper.database;
+    await db.delete(
+      'tarefas',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }
