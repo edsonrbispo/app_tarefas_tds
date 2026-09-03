@@ -4,12 +4,6 @@ import 'package:sqflite/sqflite.dart';
 class DatabaseHelper {
   static Database? _db;
 
-  //Getter que devolve o banco de dados já aberto, ou abre se ainda não exite
-  static Future<Database> get database async {
-    _db ??= await abrirBanco();
-    return _db!;
-  }
-
   //Abre (ou cria, se não existir) o arquivo do banco de dados
   static Future<Database> abrirBanco() async {
     final caminho = join(await getDatabasesPath(), 'tarefas.db');
@@ -26,6 +20,12 @@ class DatabaseHelper {
         );
       },
     );
+  }
+
+  //Getter que devolve o banco de dados já aberto, ou abre se ainda não exite
+  static Future<Database> get database async {
+    _db ??= await abrirBanco();
+    return _db!;
   }
 
   //READ: Buscar/Listar todas as tarefas salvas no banco de dados

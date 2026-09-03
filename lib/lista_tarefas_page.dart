@@ -104,31 +104,62 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
                 final tarefa = tarefas[index];
                 final bool situacao = tarefa['situacao'] == 1;
 
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 6),
-                  child: ListTile(
-                    leading: GestureDetector(
-                      onTap: () => marcarSituacao(index),
-                      child: Icon(
-                        situacao ? Icons.check_circle : Icons.circle_outlined,
-                        color: situacao ? Colors.green : Colors.grey,
+                // IMPLEMENTAÇÃO DO DESLIZAR PARA EXCLUIR
+                return Dismissible(
+                  // Chave única obrigatória usando o ID do banco
+                  key: Key(tarefa['id'].toString()),
+
+                  // Força o deslize apenas da direita para a esquerda
+                  direction: DismissDirection.endToStart,
+
+                  // Remove primeiro localmente para evitar erro visual de sincronia
+                  onDismissed: (direction) async {
+                    // Remove do banco de dados e recarrega
+                    await removerTarefa(index);
+
+                    // Feedback visual rápido na parte inferior da tela
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Tarefa excluída'),
+                        duration: Duration(seconds: 2),
                       ),
+                    );
+                  },
+
+                  // Fundo vermelho com ícone de lixeira que surge no deslize
+                  background: Container(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ), // Arredonda junto com o card
                     ),
-                    title: Text(
-                      tarefa['titulo'],
-                      style: TextStyle(
-                        decoration: situacao
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(Icons.delete, color: Colors.white),
+                  ),
+
+                  // O seu Card original adaptado
+                  child: Card(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    child: ListTile(
+                      leading: GestureDetector(
+                        onTap: () => marcarSituacao(index),
+                        child: Icon(
+                          situacao ? Icons.check_circle : Icons.circle_outlined,
+                          color: situacao ? Colors.green : Colors.grey,
+                        ),
                       ),
-                    ),
-                    subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
-                    trailing: GestureDetector(
-                      onTap: () => removerTarefa(index),
-                      child: Icon(
-                        Icons.delete_outline,
-                        color: Colors.grey,
+                      title: Text(
+                        tarefa['titulo'],
+                        style: TextStyle(
+                          decoration: situacao
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                        ),
                       ),
+                      subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
                     ),
                   ),
                 );
@@ -136,7 +167,6 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => adicionarTarefa(),
-        //shape: CircleBorder(),
         child: Icon(Icons.add),
       ),
     );
