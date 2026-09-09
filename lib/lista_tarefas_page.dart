@@ -12,6 +12,8 @@ class ListaTarefasPage extends StatefulWidget {
 class _ListaTarefasPageState extends State<ListaTarefasPage> {
   List<Map<String, dynamic>> tarefas = [];
 
+  String? filtroAtual;
+
   @override
   void initState() {
     super.initState();
@@ -19,7 +21,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
   }
 
   void carregarTarefas() async {
-    final dados = await DatabaseHelper.buscarTarefas();
+    final dados = await DatabaseHelper.buscarTarefas(filtro: filtroAtual);
     setState(() {
       tarefas = dados;
     });
@@ -34,6 +36,13 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
       tarefa['situacao'],
     );
 
+    carregarTarefas();
+  }
+
+  //Mudar Filtro dos dados = Todas, Pendente e Concluída
+  void aplicarFiltro(String? novoFiltro) {
+    filtroAtual = novoFiltro;
+    Navigator.pop(context);
     carregarTarefas();
   }
 
@@ -108,7 +117,23 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
             ListTile(
               leading: Icon(Icons.list),
               title: Text('Todas as Tarefas'),
-              onTap: () {},
+              selected: filtroAtual == null,
+              selectedColor: Colors.indigo,
+              onTap: () => aplicarFiltro(null),
+            ),
+            ListTile(
+              leading: Icon(Icons.pending_actions),
+              title: Text('Pendentes'),
+              selected: filtroAtual == 'pendentes',
+              selectedColor: Colors.indigo,
+              onTap: () => aplicarFiltro('pendentes'),
+            ),
+            ListTile(
+              leading: Icon(Icons.check_circle_outline),
+              title: Text('Concluídas'),
+              selected: filtroAtual == 'concluidas',
+              selectedColor: Colors.indigo,
+              onTap: () => aplicarFiltro('concluidas'),
             ),
             ListTile(
               leading: Icon(Icons.info_outline),
