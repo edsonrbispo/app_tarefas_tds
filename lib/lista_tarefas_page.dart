@@ -11,8 +11,9 @@ class ListaTarefasPage extends StatefulWidget {
 
 class _ListaTarefasPageState extends State<ListaTarefasPage> {
   List<Map<String, dynamic>> tarefas = [];
-
   String? filtroAtual;
+
+  static const categorias = ['Pessoal', 'Trabalho', 'Estudo', 'Compras'];
 
   @override
   void initState() {
@@ -58,36 +59,71 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
   //Adicionar Tarefa
   void adicionarTarefa() {
     final adicionarController = TextEditingController();
+    String categoriaEscolhida = categorias.first;
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Nova Tarefa'),
-          content: TextField(
-            controller: adicionarController,
-            decoration: InputDecoration(hintText: "Digite sua tarefa..."),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (adicionarController.text.isNotEmpty) {
-                  await DatabaseHelper.inserirTarefa(adicionarController.text);
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Nova Tarefa'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: adicionarController,
+                    decoration: InputDecoration(
+                      hintText: "Digite sua tarefa...",
+                    ),
+                  ),
+                  SizedBox(
+                    height: 12,
+                  ),
 
-                  carregarTarefas();
+                  DropdownButton<String>(
+                    value: categoriaEscolhida,
+                    isExpanded: true,
+                    items: categorias.map((cat) {
+                      return DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat),
+                      );
+                    }).toList(),
 
-                  if (!context.mounted) return;
+                    onChanged: (novaCategoria) {
+                      setStateDialog(() {
+                        categoriaEscolhida = novaCategoria!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (adicionarController.text.isNotEmpty) {
+                      await DatabaseHelper.inserirTarefa(
+                        adicionarController.text,
+                        categoriaEscolhida,
+                      );
 
-                  Navigator.pop(context);
-                }
-              },
-              child: Text('Adicionar'),
-            ),
-          ],
+                      carregarTarefas();
+
+                      if (!context.mounted) return;
+
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text('Adicionar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -164,6 +200,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
               itemBuilder: (context, index) {
                 final tarefa = tarefas[index];
                 final bool situacao = tarefa['situacao'] == 1;
+                final String categoria = tarefa['categoria'] ?? 'Sem Categoria';
 
                 // IMPLEMENTAÇÃO DO DESLIZAR PARA EXCLUIR
                 return Dismissible(
@@ -220,7 +257,9 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
                               : TextDecoration.none,
                         ),
                       ),
-                      subtitle: Text(situacao ? 'Concluida' : 'Pendente'),
+                      subtitle: Text(
+                        '${situacao ? 'Concluida' : 'Pendente'} - $categoria',
+                      ),
                     ),
                   ),
                 );

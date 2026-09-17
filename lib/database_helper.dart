@@ -10,14 +10,20 @@ class DatabaseHelper {
 
     return openDatabase(
       caminho,
-      version: 1,
+      version: 2,
       onCreate: (db, versao) {
         return db.execute(
           'CREATE TABLE tarefas ('
           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
           'titulo TEXT, '
-          'situacao INTEGER)', //0, 1
+          'situacao INTEGER,' //0, 1
+          'categoria TEXT)',
         );
+      },
+      onUpgrade: (db, versaoAntiga, versaoNova) {
+        if (versaoAntiga < 2) {
+          db.execute('ALTER TABLE tarefas ADD COLUMN categoria TEXT');
+        }
       },
     );
   }
@@ -51,11 +57,12 @@ class DatabaseHelper {
   }
 
   //CREATE: Inserir tarefa no banco de dados
-  static Future<void> inserirTarefa(String titulo) async {
+  static Future<void> inserirTarefa(String titulo, String categoria) async {
     final db = await DatabaseHelper.database;
     await db.insert('tarefas', {
       'titulo': titulo,
-      'situacao': 0, //0 = False, 1 = Verdadeiro (SQLite não tem Boolean)
+      'situacao': 0,
+      'categoria': categoria,
     });
   }
 
